@@ -1,6 +1,6 @@
 rm(list = ls())
 
-if(write_minimal_dataset <- TRUE){
+if(write_minimal_dataset <- FALSE){
   
   # this code compares effect sizes of variants inferred in discovery and replication datasets
   # and draws several figures
