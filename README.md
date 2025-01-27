@@ -1,6 +1,6 @@
 # BEEHIVE GWAS
 
-Code and minimal dataset for the BEEHIVE GWAS, "The genetic architecture of HIV-1 virulence". The minimal dataset (in the minimal_dataset folder) enables to reproduce the figures.
+Code and minimal dataset for the BEEHIVE GWAS presented in "The genetic architecture of HIV-1 virulence". The minimal dataset (in the minimal_dataset folder) enables to reproduce the figures.
 
 ## Minimal dataset
 
