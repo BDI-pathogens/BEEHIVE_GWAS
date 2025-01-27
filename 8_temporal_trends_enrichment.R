@@ -2,7 +2,7 @@ rm(list = ls())
 library(plyr)
 library(RColorBrewer)
 
-if(write_minimal_dataset <- TRUE){
+if(write_minimal_dataset <- FALSE){
   
   load("~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/Gmatrix_data/prepared_BEEHIVE_LVL_full_17.RData")
   load("~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/GWAS_results/firstGWAS_BEEHIVE_LVL_full_17.RData")
