@@ -4,7 +4,7 @@ Code and minimal dataset for the BEEHIVE GWAS presented in "The genetic architec
 
 ## Minimal dataset
 
-This folder contains the data necessary to reproduce the figures in the paper.
+The folder `minimal_dataset` contains the data necessary to reproduce the figures in the paper.
 
 ### Figure 1:
 
