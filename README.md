@@ -1,6 +1,6 @@
 # BEEHIVE GWAS
 
-Code and minimal dataset for the BEEHIVE GWAS.
+Code and minimal dataset for the BEEHIVE GWAS. The minimal dataset (in the minimal_dataset folder) enables to reproduce the figures.
 
 ## Minimal dataset
 
