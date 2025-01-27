@@ -179,7 +179,7 @@ Uses the results from discovery GWAS to predict the phenotype in the BEEHIVE add
 
 `7_replication_extradata.R`
 
-Uses the gag and nef alignments of the extra additional data (the subset of Swiss sample from Bartha et al. eLife 2016 paper, not already in BEEHIVE). These alignments are in `extradata_replication/nucleotides_wHXB2/gag.fasta` and `extradata_replication/nucleotides_wHXB2/nef.fasta`. And the corresponding SPVL data in `extradata_replication/G2G_SHCS/G2G_shcs.spvl.txt`. From these, identify positions 1514 and 9008 and looks at their impact on viral load. Exports the data in `extradata_replication/summary_replication_effects.csv`.
+Uses the gag and nef alignments of the extra additional data (the subset of Swiss sample from Bartha et al. eLife 2016 paper, not already in BEEHIVE). These alignments are in `7_extradata_replication/nucleotides_wHXB2/gag.fasta` and `7_extradata_replication/nucleotides_wHXB2/nef.fasta`. And the corresponding SPVL data in `7_extradata_replication/G2G_SHCS/G2G_shcs.spvl.txt`. From these, identify positions 1514 and 9008 and looks at their impact on viral load. Exports the data in `7_extradata_replication/summary_replication_effects.csv`.
 
 
 `7_extradata_replication`					
@@ -221,9 +221,9 @@ A set of function used to resolve linear mixed models.
 
 A code to draw the phylogenetic tree in figure 1 of the paper. This calls the set of function in `function_plot.phylo.R`.
 
-`function_plot.phylo`
+`function_plot.phylo.R`
 
-A function to draw a nice phylogenetic tree with metadata.
+A set of functions to draw a nice phylogenetic tree with metadata.
 
 `GlobalAln_to_HXB2coords.csv`
 
