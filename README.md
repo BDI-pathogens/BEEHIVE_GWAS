@@ -10,28 +10,28 @@ The folder `minimal_dataset` contains the data necessary to reproduce the figure
 
 This figure is drawn by `draw_tree_Figure1.R`.
 
-`tr2.tr` is a phylogenetic tree of the 2,249 sequences used for the GSVL GWAS.
+`minimal_dataset/tr2.tr` is a phylogenetic tree of the 2,249 sequences used for the GSVL GWAS.
 
-`subtypes2.csv` contains the subtypes in the same order as the tip labels.
+`minimal_dataset/subtypes2.csv` contains the subtypes in the same order as the tip labels.
 
-`vl2.csv` contains the viral load values in the same order as the tip labels.
+`minimal_dataset/vl2.csv` contains the viral load values in the same order as the tip labels.
 
 ### Figure 2A
 
 This figure is drawn by `2.5_inspect_GWAS_results.R`.
 
-The tables in `GWAS_type_phenotype.csv` contain the results of GWASes. "type" can be "prot", "kmer", "len", "len3", "freq". Phenotype can be "BEEHIVE_LVL", "spvl_normalised_adjusted", "spvl_adjusted", "CD4_slope".
+The tables of the form `minimal_dataset/GWAS_type_phenotype.csv` contain the results of GWASes. "type" can be "prot", "kmer", "len", "len3", "freq". Phenotype can be "BEEHIVE_LVL", "spvl_normalised_adjusted", "spvl_adjusted", "CD4_slope".
 
 
 ### Figure 2B, C
 
 The figure is drawn by `8_temporal_trends_enrichment.R`. 
 
-`frequency_through_time_hit1.csv` and `frequency_through_time_hit2.csv`
+`minimal_dataset/frequency_through_time_hit1.csv` and `minimal_dataset/frequency_through_time_hit2.csv`
 
 Tables containing the frequency of mutations through time with confidence intervals (Figure 2B).
 
-`enrichment_df`
+`minimal_dataset/enrichment_df.csv`
 
 Table containing the results of the enrichment analyses (Figure 2C).
 
@@ -39,15 +39,15 @@ Table containing the results of the enrichment analyses (Figure 2C).
 
 This figure is drawn by `5_post_replication_analysis_v2.R` (BEEHIVE additional, left panels) and `9_Gabrielaite/analyse_Gabrielaite.R` (INSIGHT, right panels).
 
-Tables in `GWAS_main_additional_SNPonly_combined_phenotype.csv`
+Tables of the form `minimal_dataset/GWAS_main_additional_SNPonly_combined_phenotype.csv`
 
 Tables containing, for each phenotype ("BEEHIVE_LVL", "spvl_normalised_adjusted", "spvl_adjusted", "CD4_slope"), the combined results of the main GWAS and the GWAS in additional BEEHIVE dataset. These are used for the left panels of figure 3.
 
-Tables in `GWAS_main_INSIGHT_combined_CD4_phenotype.csv`
+Tables of the form `minimal_dataset/GWAS_main_INSIGHT_combined_CD4_phenotype.csv`
 
 Tables containing, for each phenotype ("BEEHIVE_LVL", "spvl_normalised_adjusted", "spvl_adjusted", "CD4_slope"), the combined results of the main GWAS and the GWAS on INSIGHT dataset. These are used for the right panels of figure 3.
 
-`idx_prot_hits_main.csv`
+`minimal_dataset/idx_prot_hits_main.csv`
 
 Small table containing the index of rows corresponding to the 2 hits in the protein GWAS of the BEEHIVE main dataset.
 
