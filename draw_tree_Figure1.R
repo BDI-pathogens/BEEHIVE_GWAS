@@ -4,7 +4,7 @@ library(phytools)
 
 # THE BEGINNING IS JUST TO WRITE THE RELEVANT OBJECTS IN MINIMAL_DATASET FOLDER
 # THIS IS NOT NEEDED ONCE THESE OBJECTS HAVE BEEN WRITTEN
-if(write_minimal_dataset <- FALSE){
+if(write_minimal_dataset <- TRUE){
   
   get.bee.id <- function(x){
     x <- as.character(x)
@@ -224,6 +224,7 @@ ntips <- length(tr2$tip.label)
 
 source("~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/function_plot.phylo.R")
 
+
 # define colors for tips:
 # 1) colors by subtypes:
 
@@ -242,6 +243,11 @@ stopifnot(all(!is.na(vl2_cat)))
 colset_vl <- viridisLite::viridis(length(unique(vl2_cat))); names(colset_vl) <- names(table(vl2_cat))
 cols2_vl <- colset_vl[vl2_cat]
 
+# 3) color by hypervirulent
+hypervirulent_lineage <- c("BEE0036", "BEE0037", "BEE0095", "BEE0098", "BEE0110", "BEE0197", "BEE0198", "BEE0201", "BEE0211", "BEE0232", "BEE0240", "BEE0242", "BEE0245", "BEE0248", "BEE0856", "BEE1970")
+cols2_lineage <- rep("white", length(tr2$tip.label))
+cols2_lineage[tr2$tip.label %in% hypervirulent_lineage] <- "black"
+
 # r_theta_tocoord <- function(r, theta){ # transform a radius and angle to x, y coords (useful for plotting)
 #   stopifnot(theta >= -pi & theta <= pi)
 #   stopifnot(r > 0)
@@ -251,6 +257,9 @@ cols2_vl <- colset_vl[vl2_cat]
 
 tip.labels2 <- tr2$tip.label
 tr2$tip.label<- rep("", ntips)
+
+
+
 
 pdf("~/Dropbox (Infectious Disease)//BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/tree_VL_Figure1.pdf", width = 10, height = 10)
 
@@ -276,6 +285,9 @@ circle_yy <- tip_yy * sqrt(radius2) / sqrt(tip_r2) # * sqrt(factor2)
 width <- 0.08
 segments(x0 = circle_xx * 1.0, y0 = circle_yy * 1.0, x1 = circle_xx * (1 + width), y1 = circle_yy * (1 + width), col = cols2, lwd = 1)
 segments(x0 = circle_xx * (1+width+0.01), y0 = circle_yy * (1+width+0.01), x1 = circle_xx * (1+2*width+0.01), y1 = circle_yy * (1+2*width+0.01), col = cols2_vl, lwd = 1)
+segments(x0 = circle_xx * (1+2*width+0.02), y0 = circle_yy * (1+2*width+0.02), x1 = circle_xx * (1+3*width+0.02), y1 = circle_yy * (1+3*width+0.02), col = cols2_lineage, lwd = 1)
+
+
 
 legend(x = -0.44, 0.54, pch = 20, col = colset, legend = names(colset), bty = "n")
 legend(x = 0.34, 0.54, pch = 20, col = colset_vl, legend = names(colset_vl), bty = "n")

@@ -225,6 +225,10 @@ for(pheno_name in phenos){
   
   tab <-   read.csv(paste0("~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/minimal_dataset/GWAS_main_INSIGHT_combined_", pheno_name, ".csv"))
   
+  ######################################################
+  # 1) VERSION 1 OF THE FIGURE
+  ######################################################
+  
   #par(original_par)
   
   plot(NULL, xlim = range(tab$effect)*1., ylim = range(tab$effect_Gab)*1., main = cute_names[pheno_name], las = 1, xlab = "Effect Main", ylab = "Effect INSIGHT START")
@@ -233,7 +237,7 @@ for(pheno_name in phenos){
   abline(v=0)
   #abline(0,1)
   
-  points(tab$effect, tab$effect_Gab, pch = 20)
+  points(tab$effect, tab$effect_Gab, pch = 20, cex = 0.5, col = "gray")
   
   # general lm:
   assign(paste0("lm1_", pheno_name), lm(effect_Gab ~ effect, data = tab))
@@ -255,10 +259,10 @@ for(pheno_name in phenos){
   if(pheno_name != "CD4_slope"){
     idx_hit_main <- as.numeric(idx_hit_main_all[idx_hit_main_all$V1==pheno_name,c("V2", "V3")])
     points(tab[which(tab$GWAS_row==idx_hit_main[1]), c("effect", "effect_Gab")], cex = 2, pch = 20)
-    text(tab[which(tab$GWAS_row==idx_hit_main[1]), "effect"], tab[which(tab$GWAS_row==idx_hit_main[1]), "effect_Gab"]+0.005, "GagT242N")
+    text(tab[which(tab$GWAS_row==idx_hit_main[1]), "effect"]+0.008, tab[which(tab$GWAS_row==idx_hit_main[1]), "effect_Gab"]+0.008, "GagT242N")
     
     points(tab[which(tab$GWAS_row==idx_hit_main[2]), c("effect", "effect_Gab")], cex = 2, pch = 20)
-    text(tab[which(tab$GWAS_row==idx_hit_main[2]), "effect"], tab[which(tab$GWAS_row==idx_hit_main[2]), "effect_Gab"]+0.005, "Nef71K")
+    text(tab[which(tab$GWAS_row==idx_hit_main[2]), "effect"]+0.008, tab[which(tab$GWAS_row==idx_hit_main[2]), "effect_Gab"]+0.008, "Nef71K")
   }
   
   #legend("bottomright", legend = gene_list, col = sapply(gene_list, function(gg) rgb(colset[1, gg], colset[2, gg], colset[3, gg])), lwd = 2, lty = 1, pch = 20, bty = "n")
@@ -267,6 +271,59 @@ for(pheno_name in phenos){
   # hits_idx <- which(GWAS$start_position_alignment.x %in% c(1514, 9008))
   # points((GWAS$effect1.x[hits_idx]), (GWAS$effect1.y[hits_idx]), pch = 20, cex = 2, col = cols[1])
   # text((GWAS$effect1.x[hits_idx]), (GWAS$effect1.y[hits_idx]) + 0.03, c(1514, 9008), col = cols[1])
+  
+  ######################################################
+  # 2) VERSION 2 OF THE FIGURE
+  ######################################################
+  
+  if(pheno_name %in% c("BEEHIVE_LVL", "spvl_adjusted", "spvl_normalised_adjusted")) ylim <- c(-0.1, 0.1) else ylim <- range(tab$effect_Gab)
+  plot(NULL, xlim = (xlim <- 1.02*range(tab$effect)), ylim = ylim, main = pheno_name, las = 1, xlab = "Effect Main", ylab = "Effect Additional")
+  
+  abline(h=0)
+  abline(v=0)
+  #abline(0,1)
+  
+  #points(tab$effect, tab$effect1.y, pch = 20, cex = 0.5, col = "gray")
+  
+  plot_lm(get(paste0("lm1_", pheno_name)), tab)
+  
+  ncat <- 10
+  tab$effect_cat <- cut(tab$effect, ncat); mytab <- table(tab$effect_cat)
+  midseq <- seq(xlim[1]+0.5*(xlim[2]-xlim[1])/(ncat-1), xlim[2] - 0.5*(xlim[2]-xlim[1])/(ncat-1), length.out = ncat) # middle of the categories
+  
+  mean_y <- ddply(tab, .(effect_cat), summarise, mean_effect = mean(effect_Gab, na.rm =T), sd_effect = sd(effect_Gab, na.rm = T), N= sum(!is.na(effect_Gab)))
+  if(any(mytab==0)) mean_y <- rbind(mean_y, c(names(mytab)[which(mytab==0)], NA, NA, 0))
+  mean_y <- data.frame(mean_y)
+  mean_y$mean_effect <- as.numeric(as.character(mean_y$mean_effect))
+  mean_y$sd_effect <- as.numeric(as.character(mean_y$sd_effect))
+  mean_y$N <- as.numeric(as.character(mean_y$N))
+  mean_y$x <- midseq
+  mean_y$mean_effect_lower <- with(mean_y, mean_effect - 1.96 * sd_effect / sqrt(N))
+  mean_y$mean_effect_upper <- with(mean_y, mean_effect + 1.96 * sd_effect / sqrt(N))
+  
+  points(mean_y$x, mean_y$mean_effect, pch = 20, col = "cornflowerblue")
+  with(mean_y, segments(x0 = x, x1 = x, y0 = mean_effect_lower, y1 = mean_effect_upper, lwd = 2, col = "cornflowerblue"))
+  text(mean_y$x+0.01, mean_y$mean_effect+0.004, paste0("", mean_y$N), col = "cornflowerblue", adj = c(0, 0), cex = 0.8)
+  
+  # check these are all 1-mer and position is same
+  stopifnot(all(tab$start_position_alignment.x-tab$end_position_alignment.x == 0))
+  stopifnot(all(tab$start_position_alignment.x==tab$start_position_alignment.y))
+  
+  # write down actual effects
+  if(pheno_name != "CD4_slope"){
+    
+    idx_hit_main <- as.numeric(idx_hit_main_all[idx_hit_main_all$V1==pheno_name,c("V2", "V3")])
+    points(tab[which(tab$GWAS_row==idx_hit_main[1]), c("effect", "effect_Gab")], cex = 2, pch = 4)
+    text(tab[which(tab$GWAS_row==idx_hit_main[1]), "effect"] + 0.04, tab[which(tab$GWAS_row==idx_hit_main[1]), "effect_Gab"]-0.008, "GagT242N")
+    
+    points(tab[which(tab$GWAS_row==idx_hit_main[2]), c("effect", "effect_Gab")], cex = 2, pch = 4)
+    text(tab[which(tab$GWAS_row==idx_hit_main[2]), "effect"] + 0.04, tab[which(tab$GWAS_row==idx_hit_main[2]), "effect_Gab"]-0.008, "Nef71K")
+  }
+  
+  
+  ######################################################
+  # 3) OBSOLETE - BY GENE CORRELATION
+  ######################################################
   
   gene_list <- c("gag", "pol", "env", "tat", "vpu", "rev", "nef")
   

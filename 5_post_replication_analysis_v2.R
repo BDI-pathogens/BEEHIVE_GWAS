@@ -1,5 +1,5 @@
 rm(list = ls())
-
+library(plyr)
 if(write_minimal_dataset <- FALSE){
   
   # this code compares effect sizes of variants inferred in discovery and replication datasets
@@ -142,6 +142,10 @@ for(mytrait in phenos){
   
   pdf(paste0("~/DID/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/4_replication/replication_correlation_effect_sizes_", mytrait, ".pdf"), width = 4*1.5, height = 4*1.5)
   
+  ######################################################
+  # 1) ORIGINAL FIGURE SHOWING THE EFFECTS
+  ######################################################
+  
   par(mfrow = c(1,1))
   if(mytrait == "BEEHIVE_LVL" | mytrait == "spvl_adjusted" | mytrait == "spvl_normalised_adjusted") myrange <- c(-0.4, 0.4) else if(mytrait == "CD4_slope") myrange <- c(-0.2, 0.2)
   
@@ -151,12 +155,12 @@ for(mytrait in phenos){
   abline(v=0)
   #abline(0,1)
   
-  points(GWAS$effect, GWAS$effect1.y, pch = 20)
+  points(GWAS$effect, GWAS$effect1.y, pch = 20, cex = 0.5, col = "gray")
   
   # abline(lm1)
   plot_lm <- function(mylm , mydata, line_color = "black", b_color = "gray"){
     stopifnot("effect" %in% names(mydata))
-    my_effect <- seq(quantile(mydata$effect, 0.01), quantile(mydata$effect, 0.99), length.out = 100)
+    my_effect <- seq(quantile(mydata$effect, 0.005), quantile(mydata$effect, 0.995), length.out = 100)
     pp1 <- predict.lm(object = mylm,
                       newdata = data.frame(effect=my_effect),
                       interval = "confidence", level = 0.95)
@@ -172,11 +176,55 @@ for(mytrait in phenos){
     text((GWAS$effect1.x[hits_idx]), (GWAS$effect1.y[hits_idx]) + 0.03, c(1514, 9008), col = "black")
   }
   
+  ######################################################
+  # 2) VERSION 2 OF THE FIGURE
+  ######################################################
+  
+  if(mytrait %in% c("BEEHIVE_LVL", "spvl_adjusted", "spvl_normalised_adjusted")) ylim <- c(-0.3, 0.3) else ylim <- range(GWAS$effect1.y)
+  plot(NULL, xlim = (xlim <- 1.02*range(GWAS$effect)), ylim = ylim, main = mytrait, las = 1, xlab = "Effect Main", ylab = "Effect Additional")
+  
+  abline(h=0)
+  abline(v=0)
+  #abline(0,1)
+  
+  #points(GWAS$effect, GWAS$effect1.y, pch = 20, cex = 0.5, col = "gray")
+  
+  plot_lm(lm1, GWAS) # plot general model
+  
+  ncat <- 10
+  GWAS$effect_cat <- cut(GWAS$effect, ncat); tab <- table(GWAS$effect_cat)
+  midseq <- seq(xlim[1]+0.5*(xlim[2]-xlim[1])/(ncat-1), xlim[2] - 0.5*(xlim[2]-xlim[1])/(ncat-1), length.out = ncat) # middle of the categories
+  
+  mean_y <- ddply(GWAS, .(effect_cat), summarise, mean_effect = mean(effect1.y, na.rm =T), sd_effect = sd(effect1.y, na.rm = T), N= sum(!is.na(effect1.y)))
+  if(any(tab==0)) mean_y <- rbind(mean_y, c(names(tab)[which(tab==0)], NA, NA, 0))
+  mean_y <- data.frame(mean_y)
+  mean_y$mean_effect <- as.numeric(as.character(mean_y$mean_effect))
+  mean_y$sd_effect <- as.numeric(as.character(mean_y$sd_effect))
+  mean_y$N <- as.numeric(as.character(mean_y$N))
+  mean_y$x <- midseq
+  mean_y$mean_effect_lower <- with(mean_y, mean_effect - 1.96 * sd_effect / sqrt(N))
+  mean_y$mean_effect_upper <- with(mean_y, mean_effect + 1.96 * sd_effect / sqrt(N))
+  
+  points(mean_y$x, mean_y$mean_effect, pch = 20, col = "cornflowerblue")
+  with(mean_y, segments(x0 = x, x1 = x, y0 = mean_effect_lower, y1 = mean_effect_upper, lwd = 2, col = "cornflowerblue"))
+  text(mean_y$x+0.01, mean_y$mean_effect+0.02, paste0("", mean_y$N), col = "cornflowerblue", adj = c(0, 0), cex = 0.8)
+  
   # check these are all 1-mer and position is same
   stopifnot(all(GWAS$start_position_alignment.x-GWAS$end_position_alignment.x == 0))
   stopifnot(all(GWAS$start_position_alignment.x==GWAS$start_position_alignment.y))
+  
+  if(mytrait %in% c("BEEHIVE_LVL", "spvl_adjusted", "spvl_normalised_adjusted")){
+    hits_idx <- which(GWAS$start_position_alignment.x %in% c(1514, 9008))
+    points((GWAS$effect1.x[hits_idx]), (GWAS$effect1.y[hits_idx]), pch = 4, cex = 2, col = "black")
+    text((GWAS$effect1.x[hits_idx]) - 0.03, (GWAS$effect1.y[hits_idx]) + 0.03, c(1514, 9008), col = "black")
+  }
+  
+  ######################################################
+  # 3) DIFFERENCE BETWEEN EFFECTS ALONG THE GENOME
+  ######################################################
+  
   oo <- order(GWAS$start_position_alignment.x)
-  GWAS$negative_log_distance <- -log10(((GWAS$effect1.y-GWAS$effect)^2)) # negative log-distance
+  GWAS$negative_log_distance <- -log10(((GWAS$effect1.y-GWAS$effect)^2)) # negative log-distance between effects
   plot(GWAS$start_position_alignment.x[oo], GWAS$negative_log_distance[oo], type = "l", xlab = "Position in alignment", ylab = "Negative log-distance")
   loess_fit <- loess(negative_log_distance ~ start_position_alignment.x, data = GWAS[oo, ], span = 0.05)
   points(GWAS$start_position_alignment.x[oo], loess_fit$fitted, type = "l", col = "red", lwd = 3)
