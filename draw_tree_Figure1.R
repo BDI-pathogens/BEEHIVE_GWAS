@@ -206,7 +206,7 @@ if(write_minimal_dataset <- TRUE){
   ######################################################## SAVING MINIMAL DATA ############################################################
   
   write.csv(x = subtypes2, file = "~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/minimal_dataset/subtypes2.csv", row.names = F)
-  write.csv(x = vl2, file = "~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/minimal_dataset/vl2.csv", row.names = F)
+  write.csv(x = vl2, file = "~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/minimal_dataset/vl2.csv")
   write.tree(phy = tr2, file = "~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/minimal_dataset/tr2.tr")
 
 } # End of the condition "if(write_minimal_dataset <- FALSE){" at line 6
@@ -261,7 +261,7 @@ tr2$tip.label<- rep("", ntips)
 
 
 
-pdf("~/Dropbox (Infectious Disease)//BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/tree_VL_Figure1.pdf", width = 10, height = 10)
+#pdf("~/Dropbox (Infectious Disease)//BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/tree_VL_Figure1.pdf", width = 10, height = 10)
 
 par(xpd = TRUE, mar = c(1,1,2,1))
 tree_plot <- plot.phylo.FB(tr2, type = "fan", show.node.label = F, show.tip.label = T, x.lim = c(-0.4, 0.5), y.lim = c(-0.41, 0.5))  # need to show tip label to get angles
@@ -294,7 +294,7 @@ legend(x = 0.34, 0.54, pch = 20, col = colset_vl, legend = names(colset_vl), bty
 text(x = -0.44, y = 0.55, "Subtype", adj = 0, cex = 1.5)
 text(x = 0.2, y = 0.55, "GSVL decile (log10 copies/mL)", adj = 0, cex = 1.5)
 
-dev.off()
+#dev.off()
 
 
 
