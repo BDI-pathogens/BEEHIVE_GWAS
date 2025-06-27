@@ -8,6 +8,7 @@ find_reference_alternative <- function(allele_label){
   # in objects of the form reference_kmer, alternative_kmer, etc.
   # but can be retrieved more simply and more precisely from the GWAS table (some alleles with missing data are pooled at the GWAS step)
   # allele_label <- "len_9249_9255_1"
+  # returns a vector with type of allele, start, end, idx in GWAS_table, ref, alternative, number
   
   tmp <- strsplit(x = allele_label, split = "_")[[1]]; stopifnot(length(tmp) == 4)
   type <- tmp[1]
@@ -23,10 +24,30 @@ find_reference_alternative <- function(allele_label){
 
 if(length(args)==0){
   print("warning length of args is 0, replacing by default")
-  args <- c("spvl_normalised_adjusted", 0.05)
+  args <- c("spvl_adjusted", 0.2)
   print(args)
   setwd("~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/")
 }
+
+list_args <- list(
+  c("CD4_slope", 0.05),
+  c("CD4_slope", 0.2),
+  
+  c("BEEHIVE_LVL", 0.05),
+  c("BEEHIVE_LVL", 0.2),
+  
+  c("spvl_normalised_adjusted", 0.05),
+  c("spvl_normalised_adjusted", 0.2),
+  
+  c("spvl_adjusted", 0.05),
+  c("spvl_adjusted", 0.2)
+)
+
+# introduced 19/03/2025; loop on phenotype/p-value
+all_res <- c()
+for(ii in 1:length(list_args)){
+args <- list_args[[ii]]
+print(args)
 
 stopifnot(length(args)==2)
 pheno_name <- args[1] # "spvl_normalised_adjusted"
@@ -105,9 +126,8 @@ get_index_in_dm <- function(st = NULL, en = NULL, idx_in_GWAS = NULL, GWAS_tab, 
   
   idx_in_ind <- idx_in_GWAS # idx in ind is the same as index in GWAS
   
-  # check that the indices are correct
+  # check that the indices are correct by checking this is the same total number of individuals considered and N1, N2 etc for variants
   stopifnot(sum(full_ind_tokeep[, idx_in_ind])==GWAS_tab$N[idx_in_GWAS])
-  
   stopifnot(
     all(colSums(full_design_matrix[, idx_in_dm_start:idx_in_dm_end, drop = F] >= 0.01, na.rm = T) == GWAS_tab[idx_in_GWAS, paste0("N", 1:GWAS_tab$df[idx_in_GWAS])])
     # the ">= 0.01" is for frequency variants
@@ -116,13 +136,13 @@ get_index_in_dm <- function(st = NULL, en = NULL, idx_in_GWAS = NULL, GWAS_tab, 
   names(vec) <- c("idx_in_ind", "idx_in_dm_start", "idx_in_dm_end")
   return(vec)
   #apply(, 2, sum, na.rm = T)
-} # need to re-enter this (because saved version was uncorrected for some small mistake)
+} # need to re-enter this function (because the saved version in .RData file was uncorrected for some small mistake)
 
 # generate a list containing, for all the nucleotidic positions retained in discovery,
 # the reference/alternative alleles tested in replication dataset
 list_ref_alt_rep <- c()
 tmp_df <- list_ref_alt_disc[list_ref_alt_disc$type == "kmer", c("start", "end")]; tmp_df <- tmp_df[!duplicated(tmp_df), ]
-for(i in 1:nrow(tmp_df)){ # for each index in GWAS table (of positions tested in discovery)
+for(i in 1:nrow(tmp_df)){ # for each index in GWAS table (of positions retained in discovery)
   # find position in GWAS_kmer of replication data:
   tmp_idx <- which(GWAS_kmer$start_position_alignment==tmp_df$start[i] & GWAS_kmer$end_position_alignment==tmp_df$end[i])
   if(length(tmp_idx) == 0) next else if(length(tmp_idx) > 1) stop()
@@ -137,6 +157,7 @@ for(i in 1:nrow(tmp_df)){ # for each index in GWAS table (of positions tested in
 rm(tmp_df)
 list_ref_alt_rep <- data.frame(list_ref_alt_rep) 
 
+# now get these alleles in replication dataset and test correlation between predicted and true phenotype
 if(nrow(list_ref_alt_rep) > 0){
   
   # clean list_ref_alt_rep table:
@@ -151,19 +172,21 @@ if(nrow(list_ref_alt_rep) > 0){
   stopifnot(all((matching_variants <- list_ref_alt_rep[idx_in_rep, "variants"]) == list_ref_alt_disc[idx_in_disc, "variants"]))
   
   # look at the variants retained:
-  list_ref_alt_rep[idx_in_rep, ]
+  print(list_ref_alt_rep[idx_in_rep, ])
   list_ref_alt_disc[idx_in_disc, ]
   
   # column vector of fixed effects retained:
   matching_kmer_fixed_effects <- my_h2$fixed_effects[match(rownames(list_ref_alt_disc[idx_in_disc, ]), rownames(my_h2$fixed_effects)), 1, drop = F]
   
-  # and construct corresponding design matrix:
+  # and construct corresponding design matrix for each of the variants tested for replication
+  # first find the index in dm (design matrix)
   matching_kmer_dm_start_end <- t(
     sapply(1:length(idx_in_rep), function(i){
       get_index_in_dm(st = list_ref_alt_rep[idx_in_rep[i], "start"], en = list_ref_alt_rep[idx_in_rep[i], "end"],
                       GWAS_tab = GWAS_kmer, full_design_matrix = full_design_matrix_kmer, full_ind_tokeep = full_ind_tokeep_kmer)
     })
   )
+  # second construct design matrix
   matching_kmer_dm <- sapply(
     1:length(idx_in_rep),
     function(i) full_design_matrix_kmer[ , matching_kmer_dm_start_end[i, "idx_in_dm_start"]+list_ref_alt_rep[idx_in_rep[i], "allele_no"]-1, drop = F]
@@ -171,12 +194,40 @@ if(nrow(list_ref_alt_rep) > 0){
   # replace missing values with 0 (?)
   matching_kmer_dm[is.na(matching_kmer_dm)] <- 0
   pred_genetic_effect <- matching_kmer_dm %*% matching_kmer_fixed_effects
+  
   print(
-    lm0 <- lm(suba[, pheno_name] ~ pred_genetic_effect)
+    summary(lm0 <- lm(suba[, pheno_name] ~ pred_genetic_effect))
   )
-  tab <- table(pred_genetic_effect>0, suba[, pheno_name]>0)
-  fisher.test(tab)
+  # CI for the regression coefficient:
+  ci0 <- confint(lm0)
+  # R2 and CI for R2
+  R2 <- summary(lm0)$r.s
+  boot_R2 <- quantile(
+    sapply(1:1000, function(i){
+      samp <- sample(1:nrow(suba), replace = T)
+      summary(lm(suba[, pheno_name][samp] ~ pred_genetic_effect[samp]))$r.s
+    }), c(0.025, 0.975))
+  
+  # alternative: Fisher test for association between pred genetic effect and phenotype
+  tab <- table(pred_genetic_effect>mean(pred_genetic_effect), suba[, pheno_name]>mean(suba[, pheno_name], na.rm = T))
+  print(tab)
+  if(all(dim(tab) == c(2, 2))) print(ft <- fisher.test(tab)) else { tab <- c(NA, NA, NA, NA); ft <- list(p.value = NA)}
 }
+all_res <- rbind(
+  all_res, c(args, lm0$coefficients["pred_genetic_effect"], ci0["pred_genetic_effect",],  summary(lm0)[[4]]["pred_genetic_effect", "Pr(>|t|)"], R2, boot_R2, c(t(tab)), ft$p.value)
+)
+}
+#TODO FORMAT THIS TABLE AND SAVE
+all_res <- data.frame(all_res)
+names(all_res) <- c("phenotype", "p_threshold", "pred_genetic_effect",  "pred_genetic_effect_low",  "pred_genetic_effect_up", "p_value", "correlation_coefficient", "correlation_coefficient_low", "correlation_coefficient_up", "N_neg_neg", "N_neg_pos", "N_pos_neg", "N_pos_pos", "p_value_Fisher")
+for(cc in c("pred_genetic_effect",  "pred_genetic_effect_low",  "pred_genetic_effect_up", "p_value",
+            "correlation_coefficient", "correlation_coefficient_low", "correlation_coefficient_up",
+            "p_value_Fisher")) all_res[, cc] <- signif(as.numeric(all_res[, cc]), 2)
 
+all_res$polygenic_score_regression <- paste0(all_res$pred_genetic_effect, " [", all_res$pred_genetic_effect_low, "; ", all_res$pred_genetic_effect_up, "]")
+all_res$polygenic_score_R2 <- paste0(all_res$correlation_coefficient*100, "% [", all_res$correlation_coefficient_low*100, "; ", all_res$correlation_coefficient_up*100, "%]")
 
+all_res2 <- all_res[, c("phenotype", "p_threshold", "polygenic_score_regression", "polygenic_score_R2", "p_value")]
+all_res2
 
+write.csv(x = all_res2, file = "~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/prediction_polygenic_score.csv", row.names = F)
