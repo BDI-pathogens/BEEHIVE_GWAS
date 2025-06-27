@@ -9,7 +9,7 @@ library(igraph)
 
 if(length(args)==0){
   print("warning length of args is 0, replacing by default")
-  args <- c("CD4_slope", 0.05)
+  args <- c("BEEHIVE_LVL", 0.05)
   print(args)
   setwd("~/Dropbox (Infectious Disease)/BEEHIVE_Hackathon/Code/DevelopMethods/LMM/SolvingLMMinR/")
 }
@@ -39,6 +39,34 @@ prot_to_hxb2 <- read.csv(prot_to_hxb2_file, header = T) # file containing for ea
 hxb2_map <- read.csv(hxb2_reference_file, header = T)
 
 #TODO PRINT WHY SOME POSITIONS ARE REMOVED MAYBE
+
+#####                      SHOW THE VARIANTS IN THE TABLE 1 and SUP TABLES 2, 3, 4 OF PAPER                             ####
+
+# BEEHIVE_LVL
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1124 & GWAS_kmer$end_position_alignment==1126), c("reference", paste0("alternative", 1:9))]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1413 & GWAS_kmer$end_position_alignment==1416), c("reference", paste0("alternative", 1:3))]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1514 & GWAS_kmer$end_position_alignment==1514), c("reference", paste0("alternative", 1:2))]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==7676 & GWAS_kmer$end_position_alignment==7678), c("reference", paste0("alternative", 1:3))]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==9008 & GWAS_kmer$end_position_alignment==9008), c("reference", paste0("alternative", 1:2))]
+
+# SPVL adjusted
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==660 & GWAS_kmer$end_position_alignment==664), ]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1413 & GWAS_kmer$end_position_alignment==1416), ]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1514 & GWAS_kmer$end_position_alignment==1514), ]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==9008 & GWAS_kmer$end_position_alignment==9008), ]
+
+
+# SPVL adjusted normalised
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1413 & GWAS_kmer$end_position_alignment==1416), ]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==1514 & GWAS_kmer$end_position_alignment==1514), ]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==9008 & GWAS_kmer$end_position_alignment==9008), ]
+
+
+# CD4 slope
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==2172 & GWAS_kmer$end_position_alignment==2173), ]
+GWAS_kmer[which(GWAS_kmer$start_position_alignment==5553 & GWAS_kmer$end_position_alignment==5558), ]
+
+
 #####                                 DEFINE FUNCTIONS                              ####
 source(paste0(bonferroni_folder, "get_bonferroni_dfs.R"))
 
