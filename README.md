@@ -173,7 +173,7 @@ Looks systematically at effects found in additional BEEHIVE analysis, correlates
 
 `6_predict_phenotypes_additional.R` 
 
-Uses the results from discovery GWAS to predict the phenotype in the BEEHIVE additional dataset using the polygenic score. The arguments are the name of the phenotype and the p-value threshold used for this prediction.
+Uses the results from discovery GWAS to predict the phenotype in the BEEHIVE additional dataset using the polygenic score. The arguments are the name of the phenotype and the p-value threshold used for this prediction. This returns the table `prediction_polygenic_score.csv`
 
 ## 7. ADDITIONAL ANALYSIS OF SHCS DATA
 
@@ -206,6 +206,17 @@ Additional data from Gabrielaite et al., showing effect size for all tested vari
 
 Code matching discovery effect sizes with Gabrielaite effect sizes, and producing the figure `figure_discovery_INSIGHT` and the table `discovery_Gabrielaite_correlations.csv`.
 
+## 10. ALTERNATIVE GWAS BASED ON LASSO REGRESSION
+
+`10_lasso_v2.R`
+
+Does the alternative GWAS for each phenotype. The argument is the phenotype (either "spvl_adjusted", "BEEHIVE_LVL", "spvl_normalised_adjusted", "CD4_slope"). Loads the data and the first GWAS results. Loads the additional data. Then creates a list of variants present in at least N=10 individuals, and also present in replication. Does the lasso regression on the main dataset, then tests the lasso algorithm on the replication dataset. Draws the figure 4 in the paper.
+
+## 11. TOY MODEL FOR THE GWAS
+
+`11_toy_simulation_GWAS.R`
+
+Performs a GWAS on simulated data to understand the difficulties to replicate hits and the failure of the polygenic score, while the inferred effects of variants are weakly correlated between main and additional datasets. This is done for a number of replicates, and testing various number of loci explaining about 10% of the genetic variance (on top of the variance explained by population structure). Draws the Supplementary figure 2 in the paper.
 
 ## MISCELLANEOUS
 
